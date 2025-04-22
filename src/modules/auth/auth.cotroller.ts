@@ -12,7 +12,18 @@ export class AuthController {
 
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.authService.register(req.body);
+      const body = req.body;
+      const result = await this.authService.register(body);
+      res.status(200).send(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const body = req.body;
+      const result = await this.authService.login(body);
       res.status(200).send(result);
     } catch (error) {
       next(error);
