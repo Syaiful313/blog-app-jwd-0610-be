@@ -12,6 +12,7 @@ import { RegisterDTO } from "./dto/register.dto";
 import { PasswordService } from "./password.service";
 import { TokenService } from "./token.service";
 import { MailService } from "../mail/mail.service";
+import { ResetPasswordDTO } from "./dto/reset-password.dto";
 
 @injectable()
 export class AuthService {
@@ -120,5 +121,28 @@ export class AuthService {
     );
 
     return { message: "Email sent successfully" };
+  };
+
+  resetPassword = async (body: ResetPasswordDTO, authUserId: number) => {
+    const user = await this.prisma.user.findFirst({
+      where: { id: authUserId },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const hashedPassword = await this.passwordService.hassPassword(
+      body.password
+    );
+
+    await this.prisma.user.update({
+      where: { id: authUserId },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return { message: "Password reset successfully" };
   };
 }
