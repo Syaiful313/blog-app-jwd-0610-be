@@ -57,7 +57,7 @@ export class BlogService {
 
   getBlogBySlug = async (slug: string) => {
     const blog = await this.prisma.blog.findFirst({
-      where: { slug },
+      where: { slug, deletedAt: null },
       include: { user: { omit: { password: true } } },
     });
 
@@ -95,5 +95,26 @@ export class BlogService {
         slug,
       },
     });
+  };
+
+  deleteBlog = async (id: number, authUserId: number) => {
+    const blog = await this.prisma.blog.findFirst({
+      where: { id },
+    });
+
+    if (!blog) {
+      throw new ApiError(404, "Invalid blog id");
+    }
+
+    if (blog.userId !== authUserId) {
+      throw new ApiError(400, "forbidden");
+    }
+
+    await this.prisma.blog.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+
+    return { message: "deleted success" };
   };
 }
